@@ -4,18 +4,26 @@ class PlinkoGame {
         this.gameContainer = document.getElementById('gameContainer');
         this.startBtn = document.getElementById('startBtn');
         this.fireBtn = document.getElementById('fireBtn');
+        this.settingsBtn = document.getElementById('settingsBtn');
         this.currentOddsElement = document.getElementById('currentOdds');
         this.scoreElement = document.getElementById('score');
         this.chipsElement = document.getElementById('chips');
+        this.currentBetElement = document.getElementById('currentBet');
         this.messageElement = document.getElementById('message');
         this.powerBar = document.getElementById('powerBar');
         
         // 模态框元素
         this.setupScreen = document.getElementById('setupScreen');
         this.betInputContainer = document.getElementById('betInputContainer');
+        this.settingsContainer = document.getElementById('settingsContainer');
+        this.addBetContainer = document.getElementById('addBetContainer');
         this.initialChipsInput = document.getElementById('initialChips');
         this.betAmountInput = document.getElementById('betAmount');
+        this.addBetAmountInput = document.getElementById('addBetAmount');
         this.currentChipsDisplay = document.getElementById('currentChipsDisplay');
+        this.currentBetDisplay = document.getElementById('currentBetDisplay');
+        this.availableChipsDisplay = document.getElementById('availableChipsDisplay');
+        this.enableAddBetCheckbox = document.getElementById('enableAddBet');
         
         this.score = 0;
         this.chips = 0;
@@ -28,6 +36,7 @@ class PlinkoGame {
         this.isCharging = false;
         this.powerLevel = 0;
         this.maxPower = 100;
+        this.enableAddBet = false;
         
         // 游戏配置
         this.containerWidth = 620; // 游戏容器内部宽度
@@ -38,12 +47,12 @@ class PlinkoGame {
         this.possibleOdds = [2, 4, 6, 8, 10];
         
         // 物理参数
-        this.gravity = 0.25;
+        this.gravity = 0.5; // 增加重量（重力增加两倍）
         this.friction = 0.99;
         this.bounceFactorX = 0.9; // 增加水平弹性
         this.bounceFactorY = 0.85; // 增加垂直弹性
         this.pegRadius = 4;
-        this.ballRadius = 18; // 增加到原来的3倍 (6 * 3 = 18)
+        this.ballRadius = 12; // 缩小1/3 (18 * 2/3 = 12)
         
         this.initEventListeners();
         this.createGameElements();
@@ -56,6 +65,14 @@ class PlinkoGame {
         // 下注相关
         document.getElementById('confirmBet').addEventListener('click', () => this.confirmBet());
         document.getElementById('cancelBet').addEventListener('click', () => this.cancelBet());
+        
+        // 设置相关
+        this.settingsBtn.addEventListener('click', () => this.showSettings());
+        document.getElementById('confirmSettings').addEventListener('click', () => this.confirmSettings());
+        
+        // 追加投注相关
+        document.getElementById('confirmAddBet').addEventListener('click', () => this.confirmAddBet());
+        document.getElementById('skipAddBet').addEventListener('click', () => this.skipAddBet());
         
         // 游戏控制
         this.startBtn.addEventListener('click', () => this.startGame());
@@ -133,22 +150,23 @@ class PlinkoGame {
             this.currentBet = betAmount;
             this.chips -= betAmount;
             this.chipsElement.textContent = this.chips;
+            this.currentBetElement.textContent = this.currentBet;
             this.betInputContainer.style.display = 'none';
             
-            this.isGameActive = true;
-            this.startBtn.disabled = true;
-            this.fireBtn.disabled = false;
-            
-            // 生成随机赔率
-            this.currentOdds = this.possibleOdds[Math.floor(Math.random() * this.possibleOdds.length)];
+            // 生成随机赔率（2倍60%概率，其他各10%）
+            this.currentOdds = this.generateWeightedOdds();
             this.currentOddsElement.textContent = `${this.currentOdds}x`;
             
             // 随机选择获奖通道
             this.generateWinningChannels();
             this.updateExitChannels();
             
-            this.messageElement.textContent = `已下注 ${betAmount} 筹码！按住击发按钮蓄力！`;
-            this.messageElement.className = '';
+            // 检查是否启用追加投注
+            if (this.enableAddBet) {
+                this.showAddBetDialog();
+            } else {
+                this.startRound();
+            }
         } else {
             if (betAmount < 5 || betAmount > 100) {
                 alert('下注金额必须在5到100之间！');
@@ -156,6 +174,54 @@ class PlinkoGame {
                 alert('筹码不足！');
             }
         }
+    }
+
+    showSettings() {
+        this.enableAddBetCheckbox.checked = this.enableAddBet;
+        this.settingsContainer.style.display = 'flex';
+    }
+
+    confirmSettings() {
+        this.enableAddBet = this.enableAddBetCheckbox.checked;
+        this.settingsContainer.style.display = 'none';
+    }
+
+    showAddBetDialog() {
+        this.currentBetDisplay.textContent = this.currentBet;
+        this.availableChipsDisplay.textContent = this.chips;
+        this.addBetContainer.style.display = 'flex';
+    }
+
+    confirmAddBet() {
+        const addAmount = parseInt(this.addBetAmountInput.value);
+        if (addAmount >= 5 && addAmount <= 100 && addAmount <= this.chips) {
+            this.currentBet += addAmount;
+            this.chips -= addAmount;
+            this.chipsElement.textContent = this.chips;
+            this.currentBetElement.textContent = this.currentBet;
+            this.addBetContainer.style.display = 'none';
+            this.startRound();
+        } else {
+            if (addAmount < 5 || addAmount > 100) {
+                alert('追加金额必须在5到100之间！');
+            } else if (addAmount > this.chips) {
+                alert('筹码不足！');
+            }
+        }
+    }
+
+    skipAddBet() {
+        this.addBetContainer.style.display = 'none';
+        this.startRound();
+    }
+
+    startRound() {
+        this.isGameActive = true;
+        this.startBtn.disabled = true;
+        this.fireBtn.disabled = false;
+        
+        this.messageElement.textContent = `总下注 ${this.currentBet} 筹码！按住击发按钮蓄力！`;
+        this.messageElement.className = '';
     }
 
     cancelBet() {
@@ -213,8 +279,11 @@ class PlinkoGame {
         this.messageElement.textContent = '弹珠发射中...';
         this.messageElement.className = '';
         
-        // 创建弹珠
-        this.createBall();
+        // 保存当前蓄力值
+        const currentPower = this.powerLevel;
+        
+        // 创建弹珠（使用保存的蓄力值）
+        this.createBall(currentPower);
         
         // 开始物理模拟
         this.startPhysicsSimulation();
@@ -224,7 +293,7 @@ class PlinkoGame {
         this.updatePowerBar();
     }
 
-    createBall() {
+    createBall(powerLevel = 0) {
         // 移除现有弹珠
         if (this.ball) {
             this.ball.element.remove();
@@ -236,14 +305,15 @@ class PlinkoGame {
         this.gameContainer.appendChild(ballElement);
 
         // 初始位置：从右侧发射管，通过弯道进入左上角
-        const initialPower = Math.max(10, this.powerLevel / 10); // 根据蓄力调整初始速度
+        const powerMultiplier = 1 + (powerLevel / this.maxPower) * 2; // 蓄力影响速度倍数
+        const baseSpeed = 4;
         
         this.ball = {
             element: ballElement,
             x: 20, // 从左上角开始
             y: 30,
-            vx: 3 + initialPower * 0.2, // 向右的初始速度
-            vy: 1, // 轻微向下
+            vx: baseSpeed * powerMultiplier, // 向右的初始速度，受蓄力影响
+            vy: 1 + powerLevel * 0.02, // 轻微向下，也受蓄力影响
             radius: this.ballRadius,
             phase: 'entry' // entry, falling, landed
         };
@@ -255,6 +325,22 @@ class PlinkoGame {
         if (this.ball) {
             this.ball.element.style.left = `${this.ball.x - this.ball.radius}px`;
             this.ball.element.style.top = `${this.ball.y - this.ball.radius}px`;
+        }
+    }
+
+    generateWeightedOdds() {
+        const random = Math.random() * 100;
+        
+        if (random < 60) {
+            return 2; // 60% 概率
+        } else if (random < 70) {
+            return 4; // 10% 概率
+        } else if (random < 80) {
+            return 6; // 10% 概率
+        } else if (random < 90) {
+            return 8; // 10% 概率
+        } else {
+            return 10; // 10% 概率
         }
     }
 
@@ -385,8 +471,8 @@ class PlinkoGame {
             // 柱子碰撞检测
             this.handlePegCollisions();
             
-            // 检查是否到达底部
-            if (this.ball.y > this.containerHeight - 50) {
+            // 检查是否到达底部（通道内）
+            if (this.ball.y > this.containerHeight - 70) {
                 this.handleBallLanding();
                 return;
             }
@@ -511,6 +597,7 @@ class PlinkoGame {
         this.isBallInMotion = false;
         this.isGameActive = false;
         this.currentBet = 0;
+        this.currentBetElement.textContent = 0;
         this.startBtn.disabled = false;
         this.fireBtn.disabled = true;
         
@@ -532,7 +619,6 @@ class PlinkoGame {
             this.messageElement.textContent = '筹码不足！游戏结束。';
             this.messageElement.className = 'lose-message';
         }
-        this.messageElement.className = '';
     }
 
     resetGame() {

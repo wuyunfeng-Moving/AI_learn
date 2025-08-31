@@ -161,11 +161,11 @@
 
         .ball {
             position: absolute;
-            width: 36px;
-            height: 36px;
+            width: 24px;
+            height: 24px;
             background: radial-gradient(circle at 30% 30%, #fff, #ff4444, #cc0000);
             border-radius: 50%;
-            box-shadow: 0 0 15px rgba(255, 68, 68, 0.7);
+            box-shadow: 0 0 12px rgba(255, 68, 68, 0.7);
             transition: none;
             z-index: 100;
             border: 2px solid #aa0000;
@@ -184,19 +184,22 @@
             position: absolute;
             bottom: 0;
             width: 48px;
-            height: 45px;
-            border: 2px solid #666;
-            border-bottom: none;
+            height: 60px;
+            border-left: 3px solid #666;
+            border-right: 3px solid #666;
+            border-bottom: 3px solid #666;
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             justify-content: center;
             font-weight: bold;
             font-size: 11px;
             color: white;
+            padding-bottom: 5px;
+            background: linear-gradient(to bottom, transparent 0%, rgba(68,68,68,0.3) 70%, rgba(68,68,68,0.8) 100%);
         }
 
         .exit-channel.winning {
-            background: linear-gradient(to bottom, #ff4444, #cc0000);
+            background: linear-gradient(to bottom, rgba(255,68,68,0.2) 0%, rgba(255,68,68,0.6) 70%, rgba(204,0,0,0.9) 100%);
             border-color: #ff6666;
             box-shadow: 0 0 15px rgba(255, 68, 68, 0.7);
             animation: glow 1s ease-in-out infinite alternate;
@@ -366,6 +369,7 @@
         <div class="controls">
             <button id="startBtn" class="btn btn-start">开始游戏</button>
             <button id="fireBtn" class="btn btn-fire" disabled>按住蓄力发射</button>
+            <button id="settingsBtn" class="btn" style="background: #666; color: white;">设置</button>
         </div>
 
         <div class="game-info">
@@ -374,6 +378,9 @@
             </div>
             <div class="chip-display">
                 筹码: <span id="chips" class="chip-amount">0</span>
+            </div>
+            <div class="chip-display">
+                当前下注: <span id="currentBet" class="chip-amount">0</span>
             </div>
             <div class="score">
                 得分: <span id="score">0</span>
@@ -422,6 +429,41 @@
             </div>
             <button id="confirmBet" class="btn btn-start">确认下注</button>
             <button id="cancelBet" class="btn" style="background: #666; color: white; margin-left: 10px;">取消</button>
+        </div>
+    </div>
+
+    <!-- 设置屏幕 -->
+    <div class="bet-input-container" id="settingsContainer">
+        <div class="bet-modal">
+            <h3>⚙️ 游戏设置</h3>
+            <div class="input-group">
+                <label>
+                    <input type="checkbox" id="enableAddBet"> 启用追加投注功能
+                </label>
+                <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                    启用后，在发射前可以追加投注金额
+                </p>
+            </div>
+            <button id="confirmSettings" class="btn btn-start">确认设置</button>
+        </div>
+    </div>
+
+    <!-- 追加投注屏幕 -->
+    <div class="bet-input-container" id="addBetContainer">
+        <div class="bet-modal">
+            <h3>💰 追加投注</h3>
+            <div style="margin: 15px 0; color: #333;">
+                当前下注: <span id="currentBetDisplay">0</span> 筹码
+            </div>
+            <div class="input-group">
+                <label for="addBetAmount">追加金额 (5-100):</label>
+                <input type="number" id="addBetAmount" min="5" max="100" value="5">
+            </div>
+            <div style="margin: 15px 0; color: #666;">
+                可用筹码: <span id="availableChipsDisplay">0</span>
+            </div>
+            <button id="confirmAddBet" class="btn btn-start">确认追加</button>
+            <button id="skipAddBet" class="btn" style="background: #666; color: white; margin-left: 10px;">跳过</button>
         </div>
     </div>
 

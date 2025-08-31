@@ -40,10 +40,10 @@ class PlinkoGame {
         // 物理参数
         this.gravity = 0.25;
         this.friction = 0.99;
-        this.bounceFactorX = 0.8;
-        this.bounceFactorY = 0.7;
+        this.bounceFactorX = 0.9; // 增加水平弹性
+        this.bounceFactorY = 0.85; // 增加垂直弹性
         this.pegRadius = 4;
-        this.ballRadius = 6;
+        this.ballRadius = 18; // 增加到原来的3倍 (6 * 3 = 18)
         
         this.initEventListeners();
         this.createGameElements();
@@ -259,8 +259,17 @@ class PlinkoGame {
     }
 
     generateWinningChannels() {
-        // 根据赔率决定获奖通道数量（赔率越高，获奖通道越少）
-        const winningCount = Math.max(1, Math.floor(this.exitChannels / this.currentOdds));
+        // 根据赔率决定获奖通道数量
+        let winningCount;
+        switch(this.currentOdds) {
+            case 2: winningCount = 4; break;
+            case 4: winningCount = 3; break;
+            case 6: winningCount = 2; break;
+            case 8: 
+            case 10: winningCount = 1; break;
+            default: winningCount = 1;
+        }
+        
         this.winningChannels = [];
         
         // 随机选择获奖通道
@@ -281,17 +290,17 @@ class PlinkoGame {
         const existingPegs = this.gameContainer.querySelectorAll('.peg');
         existingPegs.forEach(peg => peg.remove());
 
-        // 创建5层栅格，每层10个柱子
+        // 创建5层栅格，每层10个柱子 - 调整间距以适应更大的弹珠
         for (let row = 0; row < this.pegRows; row++) {
-            const y = 100 + row * 80; // 从顶部100px开始，每层间隔80px
+            const y = 120 + row * 85; // 从顶部120px开始，每层间隔85px
             const pegsInThisRow = this.pegsPerRow;
             
             for (let col = 0; col < pegsInThisRow; col++) {
                 // 交错排列：奇数行偏移半个间距
-                const offsetX = (row % 2) * 30;
-                const x = 60 + col * 50 + offsetX;
+                const offsetX = (row % 2) * 35;
+                const x = 70 + col * 55 + offsetX;
                 
-                if (x < this.containerWidth - 60) { // 确保柱子在边界内
+                if (x < this.containerWidth - 70) { // 确保柱子在边界内
                     const peg = document.createElement('div');
                     peg.className = 'peg';
                     peg.style.left = `${x}px`;
@@ -307,8 +316,8 @@ class PlinkoGame {
         const existingChannels = this.gameContainer.querySelectorAll('.exit-channel');
         existingChannels.forEach(channel => channel.remove());
 
-        // 创建12个出口通道
-        const channelWidth = 50;
+        // 创建12个出口通道 - 调整尺寸以适应更大的弹珠
+        const channelWidth = 48;
         const totalWidth = channelWidth * this.exitChannels;
         const startX = (this.containerWidth - totalWidth) / 2;
 
@@ -396,16 +405,16 @@ class PlinkoGame {
         // 左右边界（容器内壁）
         if (this.ball.x - this.ball.radius < 10) {
             this.ball.x = 10 + this.ball.radius;
-            this.ball.vx *= -this.bounceFactorX;
+            this.ball.vx *= -this.bounceFactorX * 1.1; // 增加墙壁反弹弹性
         } else if (this.ball.x + this.ball.radius > this.containerWidth - 10) {
             this.ball.x = this.containerWidth - 10 - this.ball.radius;
-            this.ball.vx *= -this.bounceFactorX;
+            this.ball.vx *= -this.bounceFactorX * 1.1; // 增加墙壁反弹弹性
         }
         
         // 顶部边界
         if (this.ball.y - this.ball.radius < 10) {
             this.ball.y = 10 + this.ball.radius;
-            this.ball.vy *= -this.bounceFactorY;
+            this.ball.vy *= -this.bounceFactorY * 1.1; // 增加墙壁反弹弹性
         }
     }
 
@@ -441,9 +450,14 @@ class PlinkoGame {
                 this.ball.vx -= 2 * dotProduct * normalX * this.bounceFactorX;
                 this.ball.vy -= 2 * dotProduct * normalY * this.bounceFactorY;
                 
+                // 增加弹性 - 给予额外的反弹速度
+                const extraBounce = 1.2;
+                this.ball.vx *= extraBounce;
+                this.ball.vy *= extraBounce;
+                
                 // 添加随机性
-                this.ball.vx += (Math.random() - 0.5) * 3;
-                this.ball.vy += Math.abs(Math.random() - 0.5) * 2; // 向下的随机性更多
+                this.ball.vx += (Math.random() - 0.5) * 4;
+                this.ball.vy += Math.abs(Math.random() - 0.5) * 3;
             }
         });
     }
@@ -473,7 +487,7 @@ class PlinkoGame {
     }
 
     determineLandingChannel() {
-        const channelWidth = 50;
+        const channelWidth = 48;
         const totalWidth = channelWidth * this.exitChannels;
         const startX = (this.containerWidth - totalWidth) / 2;
         

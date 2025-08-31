@@ -1,0 +1,77 @@
+/* 基础布局 */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  background: #0b0f16;
+  color: #e6edf3;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  background: #0f1420;
+  border-bottom: 1px solid #1f2a3a;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid #264567;
+  background: #173050;
+  color: #e6edf3;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.info {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #9fb5cc;
+}
+
+.info strong {
+  color: #ffd666;
+}
+
+.info .sep {
+  color: #334b67;
+}
+
+.stage {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+}
+
+.game {
+  width: 840px;
+  height: 1080px;
+  background: #0c111b;
+  border: 1px solid #1f2a3a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+/* 渲染中 Matter 的 canvas 将插入到 .game 内 */

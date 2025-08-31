@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>弹珠游戏 - Marble Game</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="toolbar">
+        <button id="startBtn" class="btn">开始</button>
+        <button id="fireBtn" class="btn" disabled>击发</button>
+        <div class="info">
+          <span>赔率：</span><strong id="payoutLabel">-</strong>
+          <span class="sep">|</span>
+          <span>目标出口：</span><strong id="targetExitLabel">-</strong>
+          <span class="sep">|</span>
+          <strong id="resultLabel"></strong>
+        </div>
+      </header>
+
+      <main class="stage">
+        <div id="game" class="game"></div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+    <script src="./main.js"></script>
+  </body>
+  </html>
+

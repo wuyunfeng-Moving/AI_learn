@@ -104,18 +104,59 @@
             border-radius: 10px;
             overflow: hidden;
             border: 3px solid #16213e;
+            display: flex;
+        }
+
+        .launch-area {
+            width: 120px;
+            height: 100%;
+            background: #2a2a4e;
+            border-right: 3px solid #16213e;
+            position: relative;
+        }
+
+        .game-container-inner {
+            flex: 1;
+            position: relative;
+            background: #1a1a2e;
+            border: 3px solid #444;
+            border-radius: 5px;
+            margin: 10px;
         }
 
         .launch-tube {
             position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 80px;
+            bottom: 50px;
+            right: 10px;
+            width: 30px;
+            height: 100px;
             background: linear-gradient(to top, #333, #555);
-            border-radius: 20px 20px 0 0;
+            border-radius: 15px;
             border: 2px solid #666;
+        }
+
+        .launch-curve {
+            position: absolute;
+            bottom: 150px;
+            right: 10px;
+            width: 80px;
+            height: 80px;
+            border: 3px solid #666;
+            border-bottom: none;
+            border-right: none;
+            border-radius: 0 0 0 40px;
+            background: transparent;
+        }
+
+        .launch-horizontal {
+            position: absolute;
+            top: 20px;
+            left: 10px;
+            right: 90px;
+            height: 30px;
+            border-top: 3px solid #666;
+            border-bottom: 3px solid #666;
+            background: linear-gradient(to bottom, #555, #333);
         }
 
         .ball {
@@ -141,7 +182,7 @@
         .exit-channel {
             position: absolute;
             bottom: 0;
-            width: 60px;
+            width: 50px;
             height: 40px;
             border: 2px solid #666;
             border-bottom: none;
@@ -149,7 +190,7 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 11px;
             color: white;
         }
 
@@ -204,6 +245,117 @@
             40% { transform: translateY(-10px); }
             60% { transform: translateY(-5px); }
         }
+
+        .power-bar-container {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 200px;
+            background: #333;
+            border: 2px solid #666;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .power-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, #4CAF50, #FFC107, #f44336);
+            transition: height 0.1s ease;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .power-label {
+            position: absolute;
+            left: -15px;
+            top: -25px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .setup-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .setup-modal {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .input-group input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 150px;
+            text-align: center;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .chip-display {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .chip-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .bet-input-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .bet-modal {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
@@ -212,12 +364,15 @@
         
         <div class="controls">
             <button id="startBtn" class="btn btn-start">开始游戏</button>
-            <button id="fireBtn" class="btn btn-fire" disabled>击发弹珠</button>
+            <button id="fireBtn" class="btn btn-fire" disabled>按住蓄力发射</button>
         </div>
 
         <div class="game-info">
             <div class="odds-display">
                 当前赔率: <span id="currentOdds">-</span>
+            </div>
+            <div class="chip-display">
+                筹码: <span id="chips" class="chip-amount">0</span>
             </div>
             <div class="score">
                 得分: <span id="score">0</span>
@@ -225,10 +380,48 @@
         </div>
 
         <div class="game-board" id="gameBoard">
-            <div class="launch-tube" id="launchTube"></div>
+            <div class="launch-area">
+                <div class="power-bar-container">
+                    <div class="power-label">蓄力</div>
+                    <div class="power-bar" id="powerBar"></div>
+                </div>
+                <div class="launch-tube" id="launchTube"></div>
+                <div class="launch-curve"></div>
+                <div class="launch-horizontal"></div>
+            </div>
+            <div class="game-container-inner" id="gameContainer">
+            </div>
         </div>
 
         <div class="message" id="message"></div>
+    </div>
+
+    <!-- 初始筹码设置屏幕 -->
+    <div class="setup-screen" id="setupScreen">
+        <div class="setup-modal">
+            <h2>🎯 欢迎来到弹珠游戏</h2>
+            <div class="input-group">
+                <label for="initialChips">请输入初始筹码 (100-10000):</label>
+                <input type="number" id="initialChips" min="100" max="10000" value="1000">
+            </div>
+            <button id="confirmChips" class="btn btn-start">确认开始</button>
+        </div>
+    </div>
+
+    <!-- 下注输入屏幕 -->
+    <div class="bet-input-container" id="betInputContainer">
+        <div class="bet-modal">
+            <h3>💰 请输入下注金额</h3>
+            <div class="input-group">
+                <label for="betAmount">下注金额 (5-100):</label>
+                <input type="number" id="betAmount" min="5" max="100" value="10">
+            </div>
+            <div style="margin: 15px 0; color: #666;">
+                当前筹码: <span id="currentChipsDisplay">0</span>
+            </div>
+            <button id="confirmBet" class="btn btn-start">确认下注</button>
+            <button id="cancelBet" class="btn" style="background: #666; color: white; margin-left: 10px;">取消</button>
+        </div>
     </div>
 
     <script src="game.js"></script>
